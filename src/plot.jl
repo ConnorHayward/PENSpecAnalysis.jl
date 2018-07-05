@@ -50,17 +50,20 @@ Plot can optionally contain peak wavelength and chi2 of fit.
 
 # Arguements
 - 'mode' = normalization setting to be used. If height, histogram normallized to highest weight. If area, normalized so norm(h)=1.
+- 'Bkg': Optionally the background can be subtracted for the plot
 """
-function plot_norm_emission_spectra(dict::OrderedDict,fit=false; mode="height", range=10)
+function plot_norm_emission_spectra(dict::OrderedDict,fit=false; mode="height", range=10, Bkg=0)
     plt = plot(bg=:white)
     for key in keys(dict)
-        h = read_spec_data(dict[key])
-
+        if Bkg == 0
+            h = read_spec_data(dict[key], false)
+        else
+            h = read_spec_data(dict[key], false, Bkg=Bkg)
+        end
+        
         if mode == "height"
             h.weights = h.weights./maximum(h.weights)
-        end
-
-        if mode =="area"
+        elseif mode =="area"
             h.weights = h.weights./norm(h)
         end
 
