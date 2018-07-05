@@ -61,3 +61,34 @@ function prepare_dir(filepath::String, pattern="")
     return data_dict
 end
 export prepare_dir
+
+"""
+filter_spectrum(h::Histogram; threshold=2.5, average_window=5)
+
+Remove clocking issues from histogram using moving window average.
+
+Sigma threshold to remove point set to 2.5 by default. Average window defaults to 5 points either side of the current value.
+"""
+function filter_spectrum!(h::Histogram; threshold=2.5,average_window=5)
+
+    for iter in eachindex(h.weights[1:end-average_window])
+
+        while iter < 1+average_window
+            iter=iter+1
+        end
+
+        if iter+average_window > length(h.weights)-average_window
+            break
+        end
+
+        cut = mean(h.weights[iter-average_window:iter+average_window])+threshold*std(h.weights[iter-average_window:iter+average_window])
+        if h.weights[iter]>cut
+            deleteat!(h.weights,iter)
+            deleteat!(h.edges[1],iter)
+            #println("Clocking Error Found")
+        end
+    end
+    return h
+end
+
+export filter_spectrum!
