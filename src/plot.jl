@@ -27,7 +27,7 @@ function plot_emission_spectra(dict::OrderedDict,fit=false;range=10)
 end
 
 function plot_emission_spectra(h::Histogram,fit=false;range=10)
-    h = read_spec_data(dict[key])
+    plt = plot(bg=:white)
     plot!(plt, h,label="$key",st=:step)
 
     if fit
