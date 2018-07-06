@@ -42,30 +42,38 @@ Reads input csv datafile from ANDOR Spectrometer into StatsBase histogram for an
 """
 
 
-function read_spec_data(filename::String, format::Bool; Bkg=0)
+# function read_spec_data(filename::String, format::Bool; bkg=0)
+#
+#     f = open(filename)
+#     data = readdlm(IOBuffer(readstring(f)),',')
+#     data = data[1:end,1:2]
+#
+#     edge_vec = [0.5 * (data[:,1][i] + data[:,1][i + 1]) for i = 1:length(data[:,1]) - 1]
+#     unshift!(edge_vec, data[:,1][1]-(data[:,1][2]-data[:,1][1])/2)
+#     append!(edge_vec, data[:,1][end]+(data[:,1][end]-data[:,1][end-1])/2)
+#         x = float.(data[1:end,1])
+#     # if bkg == 0
+#     #     y = float.(data[1:end,2])
+#     # elseif typeof(bkg) == Float64
+#     #     y = float.(data[1:end,2]).-bkg
+#     # else
+#     #     y = float.(data[1:end,2]).-float(mean(bkg[2]))
+#     # end
+#     # if format
+#     #     return x,y
+#     # else
+#     #     h = fit(Histogram, x, weights(y), edge_vec, closed=:left)
+#     #     return h
+#     # end
+# end
 
-    f = open(filename)
-    data = readdlm(IOBuffer(readstring(f)),',')
-    data = data[1:end,1:2]
+function remove_background!(h::Histogram, bkg::Float64)
+    h.weights = h.weights .- bkg
+end
 
-    edge_vec = [0.5 * (data[:,1][i] + data[:,1][i + 1]) for i = 1:length(data[:,1]) - 1]
-    unshift!(edge_vec, data[:,1][1]-(data[:,1][2]-data[:,1][1])/2)
-    append!(edge_vec, data[:,1][end]+(data[:,1][end]-data[:,1][end-1])/2)
-        x = float.(data[1:end,1])
-    if Bkg == 0
-        y = float.(data[1:end,2])
-    elseif typeof(Bkg) == Float64
-        y = float.(data[1:end,2]).-Bkg
-    else
-        y = float.(data[1:end,2]).-float(sum(Bkg[2])/length(Bkg[2]))
-    end
-    if format
-        return x,y
-    else
-        h = fit(Histogram, x, weights(y), edge_vec, closed=:left)
-        return h
-    end
+function remove_background!(h::Histogram, bkg::Histogram)
+    h.weights = h.weights .- mean(bkg.weights)
 end
 
 
-export read_spec_data
+export remove_background!
