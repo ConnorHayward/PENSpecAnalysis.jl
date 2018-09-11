@@ -14,13 +14,16 @@ Reads input csv datafile from ANDOR Spectrometer into StatsBase histogram for an
 function read_spec_data(filename::String)
     f = open(filename)
     data = readdlm(IOBuffer(readstring(f)),',')
+
+    data = readdlm(IOBuffer(readstring(f)),',')
     try
-        data = readdlm(IOBuffer(readstring(f)),',')
         data = data[1:end,1:2]
     catch
+        println("Error")
+    end
         data = readdlm(IOBuffer(readstring(f)),'\t')
         data = data[1:end,1:2]
-    end
+
     edge_vec = [0.5 * (data[:,1][i] + data[:,1][i + 1]) for i = 1:length(data[:,1]) - 1]
     unshift!(edge_vec, data[:,1][1]-(data[:,1][2]-data[:,1][1])/2)
     append!(edge_vec, data[:,1][end]+(data[:,1][end]-data[:,1][end-1])/2)
