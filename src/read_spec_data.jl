@@ -11,17 +11,24 @@ Reads input csv datafile from ANDOR Spectrometer into StatsBase histogram for an
 # Returns
 - 'h::Histogram': Histogram of data.
 """
-function read_spec_data(filename::String)
-    f = open(filename)
-    data = readdlm(IOBuffer(readstring(f)),',')
 
-    try
-        data = data[1:end,1:2]
-    catch
-        println("Error Check")
-        data = readdlm(IOBuffer(readstring(f)),'\t')
-        data = data[1:end,1:2]
+function new_reader(filename::String)
+    f = open(filename)
+    for line in eachline(filename)
+        if contains(line,",")
+            delim = ','
+        elseif contains(line,"\t")
+           delim = '\t'
+        end
+        array = readdlm(IOBuffer(readstring(f)),delim)
+        array = array[1:end,1:2]
+        return array
+        break
     end
+end
+
+function read_spec_data(filename::String)
+    data = new_reader(filename)
 
     edge_vec = [0.5 * (data[:,1][i] + data[:,1][i + 1]) for i = 1:length(data[:,1]) - 1]
     unshift!(edge_vec, data[:,1][1]-(data[:,1][2]-data[:,1][1])/2)
